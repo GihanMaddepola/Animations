@@ -1,0 +1,234 @@
+//Load ID Auto Increment
+
+Function Load_Entry() 
+        Dim Sql As String
+        Dim con = New SqlConnection()
+        con = DBEngin.GetConnection(True)
+        Dim M01 As DataSet
+
+        Try
+            Sql = "select * from P01Parameter where  P01Code='ED' "
+            M01 = DBEngin.ExecuteDataset(con, Nothing, Sql)
+            If isValidDataset(M01) Then
+                If M01.Tables(0).Rows(0)("P01No") >= 1 And M01.Tables(0).Rows(0)("P01No") < 10 Then
+                    txtCode.Text = "ED-00" & M01.Tables(0).Rows(0)("P01No")
+                ElseIf M01.Tables(0).Rows(0)("P01No") >= 10 And M01.Tables(0).Rows(0)("P01No") < 100 Then
+                    txtCode.Text = "ED-0" & M01.Tables(0).Rows(0)("P01No")
+                Else
+                    txtCode.Text = "ED-" & M01.Tables(0).Rows(0)("P01No")
+                End If
+            End If
+
+
+            con.close()
+
+        Catch returnMessage As Exception
+            If returnMessage.Message <> Nothing Then
+                MessageBox.Show(returnMessage.Message)
+                con.close()
+            End If
+        End Try
+    End Function
+    
+    
+    //Save()
+    
+    nvcFieldList1 = "update P01Parameter set P01No=P01No+ " & 1 & " where P01Code='ED' "
+            ExecuteNonQueryText(connection, transaction, nvcFieldList1)
+    
+    
+    //Validation True then function read
+    
+    Function Validation() As Boolean
+        If cboDistrict.Value = "" And cboReligion.Value = "" And cboCast.Value = "" And cboEd_qulification.Value = "" And Me.cboJob.Value = "" And Me.txt_height.Text = "" And Me.txt_weight.Text = "" And Me.cbonationality.Value = "" And Me.txt_age.Text = "" And Me.cboSex.Value = "" And Me.cboDOW.Value = "" And Me.txt_Monthly_income.Text = "" Then
+            MsgBox("Please fill in One or More Details!", MsgBoxStyle.Information, "Information..!")
+            txt_age.Focus()
+            Exit Function
+        End If
+        Validation = True
+    End Function
+
+    Private Sub cmdSearch_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmdSearch.Click
+        If Validation() = True Then
+            Call Filter_Gride()
+            txt_age.Focus()
+        End If
+    End Sub
+    
+    
+    
+    //Get Time in Sql as Time
+    
+    cast(T01DOT as time) as [Birth Time]
+    
+    //Get Income in 2 Decimals
+    
+    cast(T01Monthly_Income as decimal(10,2)) as [Monthly Income]
+    
+    
+    //Get age substract date by date(today - DOB = answer)
+    
+    DATEDIFF(YEAR,T01DOB,GETDATE())<= ' " & txt_age.Text & " '
+    
+    
+    
+    //Center text
+    txtCode.Appearance.TextHAlign = Infragistics.Win.HAlign.Center
+    
+    //Numbers Only Validation
+    
+   Private Sub txt_weight_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles txt_weight.KeyPress
+        Dim Ch As Char = e.KeyChar
+        If Not Char.IsDigit(Ch) AndAlso Asc(Ch) <> 8 Then
+            e.Handled = True
+        End If
+    End Sub
+        
+    //Key up Focus text box and combo box
+    
+    Private Sub cboCast_KeyUp(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles cboCast.KeyUp
+        If e.KeyCode = 13 Then
+            cboJob.ToggleDropdown()
+        End If
+    End Sub
+
+    Private Sub cboJob_KeyUp(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles cboJob.KeyUp
+        If e.KeyCode = 13 Then
+            txt_height.Focus()
+        End If
+    End Sub
+    
+    //Button Event to load image
+    
+    Private Sub pic_btn1_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles pic_btn1.Click
+        Dim opf As New OpenFileDialog
+
+        opf.Filter = "Choose Image(*.jpg;*.png;*.gif)|*.jpg;*.png;*.gif"
+        If opf.ShowDialog = DialogResult.OK Then
+            PictureBox1.Image = Image.FromFile(opf.FileName)
+        End If
+    End Sub
+    
+    
+    //Get Incoome 2 Decimals to form
+    
+    Private Sub txtIncome_KeyUp(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles txtIncome.KeyUp
+        If e.KeyCode = 13 Then
+            txtOther_income.Focus()
+            Call Monthly_Income()
+        End If
+    End Sub
+
+    Function Monthly_Income()
+        On Error Resume Next
+        Dim Value As Double
+
+        If IsNumeric(txtIncome.Text) Then
+            Value = CDbl(txtIncome.Text)
+
+        End If
+
+        txtIncome.Text = (Value.ToString("0,0.00", System.Globalization.CultureInfo.InvariantCulture))
+        txtIncome.Text = (String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:0,0.00}", Value))
+    End Function
+    
+    
+    //Get Picture in sql
+    
+    
+    If isValidDataset(M01) Then
+
+                Dim ms As New MemoryStream
+                Dim ms1 As New MemoryStream
+                '  ms.Dispose()
+                PictureBox1.Image.Save(ms, PictureBox1.Image.RawFormat)
+                PictureBox2.Image.Save(ms1, PictureBox2.Image.RawFormat)
+                Dim command As New SqlCommand("UPDATE T01Application_Header SET T01img1=@Img,T01img2=@Img1 WHERE  T01Ref_No='" & Trim(txtCode.Text) & "'", connection)
+                command.Parameters.Add("@img", SqlDbType.Image).Value = ms.ToArray()
+                command.Parameters.Add("@img1", SqlDbType.Image).Value = ms1.ToArray()
+                connection.Open()
+                connection.Close()
+                ms.Dispose()
+
+            End If
+            
+            
+//Image Validation
+If PictureBox2.Image Is Nothing Then
+            MsgBox("Please Select Your Image!", MsgBoxStyle.Information, "Information..!")
+            pic_btn2.Focus()
+            Exit Function
+        End If
+        
+        
+        
+        ------ULTRA GRID VIEW DOUBLE CLICK EVENT------
+        
+        
+ //'----------------------------------------Get Date ##/##/#### Format--------------------------------------------------'
+                _Dob = Year(dsUser.Tables(0).Rows(0)("T01DOB"))
+                If Month(dsUser.Tables(0).Rows(0)("T01DOB")) < 10 Then
+                    _Dob = _Dob & "0" & Month(dsUser.Tables(0).Rows(0)("T01DOB"))
+                Else
+                    _Dob = _Dob & Month(dsUser.Tables(0).Rows(0)("T01DOB"))
+                End If
+
+                If Microsoft.VisualBasic.Day(dsUser.Tables(0).Rows(0)("T01DOB")) < 10 Then
+                    _Dob = _Dob & "0" & Microsoft.VisualBasic.Day(dsUser.Tables(0).Rows(0)("T01DOB"))
+                Else
+                    _Dob = _Dob & Microsoft.VisualBasic.Day(dsUser.Tables(0).Rows(0)("T01DOB"))
+                End If
+
+                txtDOB.Text = _Dob
+
+//'------------------------------------------Get Time-------------------------------------------------------------------'
+
+                Dim _Time As String
+
+                '_Time = Hour(dsUser.Tables(0).Rows(0)("T01DOT"))
+                '_Time = Minute(dsUser.Tables(0).Rows(0)("T01DOT"))
+
+                If Hour(dsUser.Tables(0).Rows(0)("T01DOT")) < 10 Then
+                    _Time = _Time & "0" & Hour(dsUser.Tables(0).Rows(0)("T01DOT"))
+                Else
+                    _Time = _Time & Hour(dsUser.Tables(0).Rows(0)("T01DOT"))
+                End If
+                If Minute(dsUser.Tables(0).Rows(0)("T01DOT")) < 10 Then
+                    _Time = _Time & "0" & Minute(dsUser.Tables(0).Rows(0)("T01DOT"))
+                Else
+                    _Time = _Time & Minute(dsUser.Tables(0).Rows(0)("T01DOT"))
+                End If
+
+                txtBT.Text = _Time
+
+//'---------------------------------------Income get 0.00-----------------------------------------------------'
+
+                Dim Value As Double
+                Value = Trim(dsUser.Tables(0).Rows(0)("T01Monthly_Income"))
+                txtIncome.Text = (Value.ToString("0,0.00", System.Globalization.CultureInfo.InvariantCulture))
+                txtIncome.Text = (String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:0,0.00}", Value))
+
+                Value = Trim(dsUser.Tables(0).Rows(0)("T01Other_Income"))
+                txtOther_income.Text = (Value.ToString("0,0.00", System.Globalization.CultureInfo.InvariantCulture))
+                txtOther_income.Text = (String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:0,0.00}", Value))
+
+
+//'---------------------------------------------Parents CheckBox---------------------------------------------'
+
+                Dim _Father As String
+                Dim _Mother As String
+                _Father = dsUser.Tables(0).Rows(0)("T01Father")
+                _Mother = dsUser.Tables(0).Rows(0)("T01Mother")
+                If Trim(dsUser.Tables(0).Rows(0)("T01Father")) = "YES" Then
+                    chkFather.Checked = True
+                ElseIf Trim(dsUser.Tables(0).Rows(0)("T01Father")) = "NO" Then
+                    chkFather.Checked = False
+                End If
+                If Trim(dsUser.Tables(0).Rows(0)("T01Mother")) = "YES" Then
+                    chkMother.Checked = True
+                ElseIf Trim(dsUser.Tables(0).Rows(0)("T01Mother")) = "NO" Then
+                    chkMother.Checked = False
+                End If
+
+
+//
